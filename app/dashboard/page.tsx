@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import {
   CourseCard,
   type CourseCardProps,
 } from "@/components/courses/CourseCard";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Dashboard · Kue",
   description: "Your courses and office hours",
 };
-
-/** Placeholder until auth provides the real display name. */
-const displayName = "Fname Lname";
 
 const demoCourses: CourseCardProps[] = [
   {
@@ -36,7 +35,20 @@ const demoCourses: CourseCardProps[] = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const displayName =
+    user.user_metadata?.full_name ??
+    user.user_metadata?.name ??
+    user.email?.split("@")[0] ??
+    "there";
+
   return (
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />

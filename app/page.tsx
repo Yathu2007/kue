@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: 'Kue',
@@ -21,25 +22,17 @@ export default function Home() {
           Join the queue now
         </p>
 
-        <form className="mx-auto w-full max-w-xl">
-          <div
-            className="queue-glow flex h-14 items-center overflow-hidden rounded-xl border border-[#4ea0ff] bg-[#dadada]"
+        <div className="mx-auto w-full max-w-xl">
+          <Link
+            href="/login"
+            className="queue-glow mx-auto flex h-14 items-center justify-center rounded-xl border border-[#4ea0ff] bg-[#94BFFF] px-6 text-xl font-semibold text-white shadow-[0_6px_18px_rgba(148,191,255,0.35)] transition-all duration-150 ease-out hover:bg-[#a5c9ff] hover:shadow-[0_10px_24px_rgba(148,191,255,0.45)] active:translate-y-[1px] active:scale-[0.99]"
           >
-            <input
-              type="email"
-              placeholder="john.doe@mail.utoronto.ca"
-              className="h-full flex-1 bg-transparent px-4 text-xl text-[#5f5f5f] placeholder:text-[#8f8f8f] outline-none"
-              aria-label="UofT email"
-            />
-            <button
-              type="button"
-              className="mr-1 flex h-12 w-14 items-center justify-center rounded-lg bg-[#94BFFF] text-white shadow-[0_4px_10px_rgba(148,191,255,0.45)] transition-all duration-150 ease-out hover:bg-[#a5c9ff] hover:shadow-[0_6px_14px_rgba(148,191,255,0.5)] active:translate-y-[1px] active:scale-[0.97] active:shadow-[0_2px_6px_rgba(148,191,255,0.4)]"
-              aria-label="Join queue"
-            >
-              <span className="text-3xl leading-none">→</span>
-            </button>
-          </div>
-        </form>
+            Join Kue
+          </Link>
+          <p className="mt-4 text-sm text-white/55">
+            Sign in with your @utoronto.ca email.
+          </p>
+        </div>
       </section>
     </main>
   );

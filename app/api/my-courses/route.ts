@@ -1,32 +1,19 @@
 import { NextResponse } from "next/server";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/prisma/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-declare global {
-  var prisma: PrismaClient | undefined;
-}
+export async function GET() {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-const prisma =
-  globalThis.prisma ??
-  new PrismaClient({
-    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
-  });
-
-if (process.env.NODE_ENV !== "production") globalThis.prisma = prisma;
-
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId") ?? request.headers.get("x-user-id");
-
-  if (!userId) {
-    return NextResponse.json(
-      { error: "Unauthorized", hint: "Provide userId in query or x-user-id." },
-      { status: 401 },
-    );
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const memberships = await prisma.courseMembership.findMany({
-    where: { userId },
+    where: { userId: user.id },
     include: { course: true },
     orderBy: { createdAt: "desc" },
   });
