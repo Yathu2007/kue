@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @db.Uuid
   email     String   @unique
   name      String?
   image     String?
@@ -56,7 +56,7 @@ enum CourseRole {
 
 model CourseMembership {
   id       String     @id @default(cuid())
-  userId   String
+  userId   String     @db.Uuid
   courseId String
   role     CourseRole
 
@@ -73,7 +73,7 @@ model CourseMembership {
 model OfficeHourSession {
   id           String @id @default(cuid())
   courseId     String
-  instructorId String // TA or instructor running this session
+  instructorId String @db.Uuid // TA or instructor running this session
 
   title     String?
   startTime DateTime
@@ -102,7 +102,7 @@ enum QueueStatus {
 model QueueEntry {
   id        String      @id @default(cuid())
   sessionId String
-  studentId String
+  studentId String      @db.Uuid
   question  String?
   status    QueueStatus @default(WAITING)
   position  Int? // For ordering the queue
@@ -125,7 +125,7 @@ model QueueEntry {
 
 model Account {
   id                String  @id @default(cuid())
-  userId            String
+  userId            String  @db.Uuid
   type              String
   provider          String
   providerAccountId String
@@ -146,7 +146,7 @@ model Account {
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
-  userId       String
+  userId       String   @db.Uuid
   expires      DateTime
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
