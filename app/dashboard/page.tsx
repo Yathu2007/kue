@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   CourseCard,
@@ -11,29 +12,19 @@ export const metadata: Metadata = {
   description: "Your courses and office hours",
 };
 
-const demoCourses: CourseCardProps[] = [
-  {
-    code: "CSC108",
-    title: "Introduction to Computer Programming",
-    role: "student",
-    term: "Winter 2026",
-    href: "#",
-  },
-  {
-    code: "MAT137",
-    title: "Calculus with Proofs",
-    role: "ta",
-    term: "Winter 2026",
-    href: "#",
-  },
-  {
-    code: "ECE361",
-    title: "Computer Networks I",
-    role: "professor",
-    term: "Winter 2026",
-    href: "#",
-  },
-];
+type MyCoursesResponse = Array<{
+  id: string;
+  code: string;
+  name: string;
+  semester: string;
+  role: "STUDENT" | "TA" | "INSTRUCTOR";
+}>;
+
+function mapRole(role: MyCoursesResponse[number]["role"]): CourseCardProps["role"] {
+  if (role === "STUDENT") return "student";
+  if (role === "TA") return "ta";
+  return "professor";
+}
 
 export default async function DashboardPage() {
   const supabase = await createSupabaseServerClient();
@@ -48,6 +39,27 @@ export default async function DashboardPage() {
     user.user_metadata?.name ??
     user.email?.split("@")[0] ??
     "there";
+
+  const h = await headers();
+  const host = h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const baseUrl = host ? `${proto}://${host}` : "http://localhost:3000";
+
+  const coursesRes = await fetch(`${baseUrl}/api/my-courses`, {
+    cache: "no-store",
+    headers: {
+      cookie: h.get("cookie") ?? "",
+    },
+  });
+
+  const memberships = (await coursesRes.json()) as MyCoursesResponse;
+  const courses: CourseCardProps[] = memberships.map((m) => ({
+    code: m.code,
+    title: m.name,
+    term: m.semester,
+    role: mapRole(m.role),
+    href: "#",
+  }));
 
   return (
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
@@ -72,13 +84,19 @@ export default async function DashboardPage() {
           >
             Your courses
           </h2>
-          <ul className="grid gap-4 sm:grid-cols-2">
-            {demoCourses.map((course) => (
-              <li key={course.code}>
-                <CourseCard {...course} />
-              </li>
-            ))}
-          </ul>
+          {courses.length ? (
+            <ul className="grid gap-4 sm:grid-cols-2">
+              {courses.map((course) => (
+                <li key={course.code}>
+                  <CourseCard {...course} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-[#0c0b14]/60 p-6 text-white/65">
+              You're not enrolled in any courses yet.
+            </div>
+          )}
         </section>
       </div>
     </main>
