@@ -5,6 +5,8 @@ import {
   CourseCard,
   type CourseCardProps,
 } from "@/components/courses/CourseCard";
+import { UserMenu } from "@/components/dashboard/UserMenu";
+import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -34,11 +36,12 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const displayName =
-    user.user_metadata?.full_name ??
-    user.user_metadata?.name ??
-    user.email?.split("@")[0] ??
-    "there";
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { name: true },
+  });
+
+  const displayName = dbUser?.name ?? user.email?.split("@")[0] ?? "there";
 
   const h = await headers();
   const host = h.get("host");
@@ -66,15 +69,22 @@ export default async function DashboardPage() {
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-5xl">
         <header className="mb-10 border-b border-white/10 pb-8">
-          <p className="text-sm font-medium uppercase tracking-widest text-[#94BFFF]/90">
-            Dashboard
-          </p>
-          <h1 className="mt-2 font-[family-name:var(--font-kalam)] text-4xl font-medium text-white sm:text-5xl">
-            Hi, {displayName}
-          </h1>
-          <p className="mt-2 max-w-xl text-base text-white/60">
-            Courses you belong to as a student, TA, or instructor appear here.
-          </p>
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-widest text-[#94BFFF]/90">
+                Dashboard
+              </p>
+              <h1 className="mt-2 font-[family-name:var(--font-kalam)] text-4xl font-medium text-white sm:text-5xl">
+                Hi, {displayName}
+              </h1>
+              <p className="mt-2 max-w-xl text-base text-white/60">
+                Courses you belong to as a student, TA, or instructor appear
+                here.
+              </p>
+            </div>
+
+            <UserMenu displayName={displayName} />
+          </div>
         </header>
 
         <section aria-labelledby="courses-heading">
