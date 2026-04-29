@@ -41,7 +41,8 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const allowed = await requireInstructor(params.id, userId);
+  const { id } = await params;
+  const allowed = await requireInstructor(id, userId);
   if (!allowed) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -86,7 +87,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     where: {
       userId_courseId: {
         userId: body.assigneeId,
-        courseId: params.id,
+        courseId: id,
       },
     },
     include: {
@@ -108,7 +109,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const session = await prisma.officeHourSession.create({
     data: {
-      courseId: params.id,
+      courseId: id,
       instructorId: assigneeMembership.userId,
       title: body.title?.trim() || null,
       startTime: start,
@@ -141,13 +142,14 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const allowed = await requireInstructor(params.id, userId);
+  const { id } = await params;
+  const allowed = await requireInstructor(id, userId);
   if (!allowed) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const sessions = await prisma.officeHourSession.findMany({
-    where: { courseId: params.id },
+    where: { courseId: id },
     include: {
       instructor: {
         select: { id: true, email: true, name: true },
