@@ -61,7 +61,7 @@ export default async function DashboardPage() {
     title: m.name,
     term: m.semester,
     role: mapRole(m.role),
-    href: "#",
+    href: `/courses/${m.id}`,
   }));
 
   return (
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
             </ul>
           ) : (
             <div className="rounded-xl border border-white/10 bg-[#0c0b14]/60 p-6 text-white/65">
-              You're not enrolled in any courses yet.
+              You&apos;re not enrolled in any courses yet.
             </div>
           )}
         </section>
