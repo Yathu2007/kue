@@ -52,7 +52,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
       orderBy: { createdAt: "desc" },
     }),
     prisma.officeHourSession.findMany({
-      where: { courseId: params.id },
+      where: { courseId: id },
       include: {
         instructor: {
           select: {

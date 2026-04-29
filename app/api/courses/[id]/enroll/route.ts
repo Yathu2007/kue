@@ -39,11 +39,13 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
+
   const callerMembership = await prisma.courseMembership.findUnique({
     where: {
       userId_courseId: {
         userId: user.id,
-        courseId: params.id,
+        courseId: id,
       },
     },
     select: { role: true },
@@ -60,6 +62,17 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (!isValidEmail(email)) {
     return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
   }
+
+  // DEBUG: UofT enrollment email restriction — uncomment for production.
+  // if (
+  //   !email.endsWith("@mail.utoronto.ca") &&
+  //   !email.endsWith("@utoronto.ca")
+  // ) {
+  //   return NextResponse.json(
+  //     { error: "Use your @utoronto.ca or @mail.utoronto.ca email." },
+  //     { status: 400 },
+  //   );
+  // }
 
   const role = body.role === "TA" ? "TA" : "STUDENT";
 
@@ -83,7 +96,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     where: {
       userId_courseId: {
         userId: targetUser.id,
-        courseId: params.id,
+        courseId: id,
       },
     },
     include: {
@@ -108,7 +121,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   const membership = await prisma.courseMembership.create({
     data: {
       userId: targetUser.id,
-      courseId: params.id,
+      courseId: id,
       role,
     },
     include: {

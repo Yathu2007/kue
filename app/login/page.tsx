@@ -4,12 +4,14 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
-function isAllowedUofTEmail(email: string) {
-  const normalized = email.trim().toLowerCase();
-  return (
-    normalized.endsWith("@mail.utoronto.ca") || normalized.endsWith("@utoronto.ca")
-  );
-}
+// DEBUG: UofT email restriction — uncomment for production.
+// function isAllowedUofTEmail(email: string) {
+//   const normalized = email.trim().toLowerCase();
+//   return (
+//     normalized.endsWith("@mail.utoronto.ca") ||
+//     normalized.endsWith("@utoronto.ca")
+//   );
+// }
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,11 +27,12 @@ export default function LoginPage() {
     e.preventDefault();
     setMessage("");
 
-    if (!isAllowedUofTEmail(email)) {
-      setStatus("error");
-      setMessage("Use your @utoronto.ca or @mail.utoronto.ca email.");
-      return;
-    }
+    // DEBUG: UofT email restriction — uncomment for production.
+    // if (!isAllowedUofTEmail(email)) {
+    //   setStatus("error");
+    //   setMessage("Use your @utoronto.ca or @mail.utoronto.ca email.");
+    //   return;
+    // }
 
     setStatus("sending");
     const redirectTo = `${window.location.origin}/auth/callback`;

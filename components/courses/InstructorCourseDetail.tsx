@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 type EnrollmentRow = {
   id: string;
@@ -94,6 +95,19 @@ export function InstructorCourseDetail({
     setEnrollError(null);
     setEnrollStatus(null);
     setIsSubmittingEnroll(true);
+
+    // DEBUG: UofT enrollment email restriction — uncomment for production.
+    // {
+    //   const normalized = email.trim().toLowerCase();
+    //   const ok =
+    //     normalized.endsWith("@mail.utoronto.ca") ||
+    //     normalized.endsWith("@utoronto.ca");
+    //   if (!ok) {
+    //     setEnrollError("Use your @utoronto.ca or @mail.utoronto.ca email.");
+    //     setIsSubmittingEnroll(false);
+    //     return;
+    //   }
+    // }
 
     try {
       const res = await fetch(`/api/courses/${courseId}/enroll`, {
@@ -192,6 +206,13 @@ export function InstructorCourseDetail({
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
         <header className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+          >
+            <span aria-hidden>←</span>
+            Back to dashboard
+          </Link>
           <h1 className="font-mono text-2xl text-[#94BFFF]">
             {course.code} - {course.name}
           </h1>
@@ -233,6 +254,10 @@ export function InstructorCourseDetail({
             </div>
 
             <form onSubmit={handleEnrollSubmit} className="mt-4 flex flex-wrap gap-2">
+              {/* DEBUG: UofT-only enrollment on the input — merge these onto <input> when re-enabling:
+                  pattern=".+@(mail\\.)?utoronto\\.ca$"
+                  title="Use your @utoronto.ca or @mail.utoronto.ca email."
+              */}
               <input
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
