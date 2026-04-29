@@ -74,6 +74,7 @@ export function InstructorCourseDetail({
   const [isSubmittingEnroll, setIsSubmittingEnroll] = useState(false);
 
   const [assigneeId, setAssigneeId] = useState(staffOptions[0]?.id ?? "");
+  const [officeHourDate, setOfficeHourDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [location, setLocation] = useState("");
@@ -156,13 +157,30 @@ export function InstructorCourseDetail({
     setIsSubmittingOfficeHour(true);
 
     try {
+      const startDateTime = `${officeHourDate}T${startTime}`;
+      const endDateTime = `${officeHourDate}T${endTime}`;
+      if (
+        !officeHourDate ||
+        !startTime ||
+        !endTime ||
+        Number.isNaN(new Date(startDateTime).getTime()) ||
+        Number.isNaN(new Date(endDateTime).getTime())
+      ) {
+        setOfficeHourError("Please choose a date, start time, and end time.");
+        return;
+      }
+      if (new Date(endDateTime).getTime() <= new Date(startDateTime).getTime()) {
+        setOfficeHourError("End time must be after start time (same day).");
+        return;
+      }
+
       const res = await fetch(`/api/courses/${courseId}/office-hours`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assigneeId,
-          startTime,
-          endTime,
+          startTime: startDateTime,
+          endTime: endDateTime,
           location: location || null,
           title: title || null,
           recurrence: null,
@@ -190,6 +208,7 @@ export function InstructorCourseDetail({
       }
 
       setOfficeHourStatus(payload.message ?? "Office hour created.");
+      setOfficeHourDate("");
       setStartTime("");
       setEndTime("");
       setLocation("");
@@ -341,16 +360,23 @@ export function InstructorCourseDetail({
                   className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
                 />
               </div>
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-2 sm:grid-cols-3">
                 <input
-                  type="datetime-local"
+                  type="date"
+                  value={officeHourDate}
+                  onChange={(event) => setOfficeHourDate(event.target.value)}
+                  required
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
+                />
+                <input
+                  type="time"
                   value={startTime}
                   onChange={(event) => setStartTime(event.target.value)}
                   required
                   className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
                 />
                 <input
-                  type="datetime-local"
+                  type="time"
                   value={endTime}
                   onChange={(event) => setEndTime(event.target.value)}
                   required
