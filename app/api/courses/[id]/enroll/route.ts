@@ -141,3 +141,59 @@ export async function POST(request: Request, { params }: RouteContext) {
     },
   });
 }
+
+export async function DELETE(request: Request, { params }: RouteContext) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  const callerMembership = await prisma.courseMembership.findUnique({
+    where: {
+      userId_courseId: {
+        userId: user.id,
+        courseId: id,
+      },
+    },
+    select: { role: true },
+  });
+
+  if (!callerMembership || callerMembership.role !== "INSTRUCTOR") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = (await request.json()) as { membershipId?: string };
+  if (!body.membershipId) {
+    return NextResponse.json({ error: "membershipId is required." }, { status: 400 });
+  }
+
+  const membership = await prisma.courseMembership.findUnique({
+    where: { id: body.membershipId },
+    select: { id: true, courseId: true, role: true, userId: true },
+  });
+
+  if (!membership || membership.courseId !== id) {
+    return NextResponse.json({ error: "Enrollment not found." }, { status: 404 });
+  }
+
+  if (membership.role === "INSTRUCTOR") {
+    const instructorCount = await prisma.courseMembership.count({
+      where: { courseId: id, role: "INSTRUCTOR" },
+    });
+    if (instructorCount <= 1) {
+      return NextResponse.json(
+        { error: "Cannot remove the last instructor from a course." },
+        { status: 400 },
+      );
+    }
+  }
+
+  await prisma.courseMembership.delete({ where: { id: membership.id } });
+  return NextResponse.json({ deleted: true });
+}

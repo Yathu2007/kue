@@ -169,3 +169,33 @@ export async function GET(_request: Request, { params }: RouteContext) {
     })),
   );
 }
+
+export async function DELETE(request: Request, { params }: RouteContext) {
+  const userId = await getAuthedUserId();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const allowed = await requireInstructor(id, userId);
+  if (!allowed) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = (await request.json()) as { sessionId?: string };
+  if (!body.sessionId) {
+    return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
+  }
+
+  const existing = await prisma.officeHourSession.findUnique({
+    where: { id: body.sessionId },
+    select: { id: true, courseId: true },
+  });
+
+  if (!existing || existing.courseId !== id) {
+    return NextResponse.json({ error: "Office hour session not found." }, { status: 404 });
+  }
+
+  await prisma.officeHourSession.delete({ where: { id: existing.id } });
+  return NextResponse.json({ deleted: true });
+}
