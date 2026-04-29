@@ -297,14 +297,22 @@ export function InstructorCourseDetail({
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
         <header className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
-          >
-            <span aria-hidden>←</span>
-            Back to dashboard
-          </Link>
-          <h1 className="font-mono text-2xl text-[#94BFFF]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+            >
+              <span aria-hidden>←</span>
+              Back to dashboard
+            </Link>
+            <Link
+              href={`/courses/${courseId}/sessions`}
+              className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 transition hover:border-[#4ea0ff]/45 hover:bg-white/10"
+            >
+              Student view now
+            </Link>
+          </div>
+          <h1 className="mt-4 font-mono text-2xl text-[#94BFFF]">
             {course.code} - {course.name}
           </h1>
           <p className="mt-1 text-sm text-white/70">{course.semester}</p>

@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   CourseCard,
-  type CourseCardProps,
+  type CourseCardRole,
 } from "@/components/courses/CourseCard";
 import { UserMenu } from "@/components/dashboard/UserMenu";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +22,7 @@ type MyCoursesResponse = Array<{
   role: "STUDENT" | "TA" | "INSTRUCTOR";
 }>;
 
-function mapRole(role: MyCoursesResponse[number]["role"]): CourseCardProps["role"] {
+function mapRole(role: MyCoursesResponse[number]["role"]): CourseCardRole {
   if (role === "STUDENT") return "student";
   if (role === "TA") return "ta";
   return "professor";
@@ -56,13 +56,6 @@ export default async function DashboardPage() {
   });
 
   const memberships = (await coursesRes.json()) as MyCoursesResponse;
-  const courses: CourseCardProps[] = memberships.map((m) => ({
-    code: m.code,
-    title: m.name,
-    term: m.semester,
-    role: mapRole(m.role),
-    href: `/courses/${m.id}`,
-  }));
 
   return (
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
@@ -94,11 +87,21 @@ export default async function DashboardPage() {
           >
             Your courses
           </h2>
-          {courses.length ? (
+          {memberships.length ? (
             <ul className="grid gap-4 sm:grid-cols-2">
-              {courses.map((course) => (
-                <li key={course.code}>
-                  <CourseCard {...course} />
+              {memberships.map((m) => (
+                <li key={m.id}>
+                  <CourseCard
+                    code={m.code}
+                    title={m.name}
+                    term={m.semester}
+                    role={mapRole(m.role)}
+                    href={
+                      m.role === "INSTRUCTOR"
+                        ? `/courses/${m.id}`
+                        : `/courses/${m.id}/sessions`
+                    }
+                  />
                 </li>
               ))}
             </ul>

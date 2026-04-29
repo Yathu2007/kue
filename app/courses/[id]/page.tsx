@@ -33,8 +33,12 @@ export default async function CourseDetailPage({ params }: PageProps) {
     },
   });
 
-  if (!membership || membership.role !== "INSTRUCTOR") {
+  if (!membership) {
     redirect("/dashboard");
+  }
+
+  if (membership.role !== "INSTRUCTOR") {
+    redirect(`/courses/${id}/sessions`);
   }
 
   const [enrollments, officeHours] = await Promise.all([
