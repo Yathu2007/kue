@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { OfficeHourQueuePanel } from "@/components/courses/OfficeHourQueuePanel";
+import { queueStudentDisplayName } from "@/lib/queue-display";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -70,6 +72,23 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
     redirect(`/courses/${courseId}/sessions`);
   }
 
+  const waitingEntries = await prisma.queueEntry.findMany({
+    where: { sessionId, status: "WAITING" },
+    orderBy: { createdAt: "asc" },
+    select: {
+      id: true,
+      studentId: true,
+      student: { select: { name: true } },
+    },
+  });
+
+  const initialQueueRows = waitingEntries.map((e, index) => ({
+    id: e.id,
+    rank: index + 1,
+    displayName: queueStudentDisplayName(e.student.name),
+    studentId: e.studentId,
+  }));
+
   const range = `${session.startTime.toLocaleString()} – ${session.endTime.toLocaleString()}`;
 
   return (
@@ -97,10 +116,13 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
             <p className="mt-2 text-sm text-white/55">{session.location}</p>
           ) : null}
 
-          <p className="mt-6 rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
-            Interactive queue (join, wait list, and live updates) will be available here in a
-            future update.
-          </p>
+          <OfficeHourQueuePanel
+            courseId={courseId}
+            sessionId={sessionId}
+            userId={user.id}
+            role={membership.role}
+            initialEntries={initialQueueRows}
+          />
         </article>
       </div>
     </main>
