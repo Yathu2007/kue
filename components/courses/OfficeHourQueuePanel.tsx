@@ -2,12 +2,65 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+/** Matches Prisma `QueueStatus`. */
+export type QueueEntryStatus =
+  | "WAITING"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "SKIPPED"
+  | "NO_SHOW";
+
 export type QueueRow = {
   id: string;
   rank: number;
   displayName: string;
   studentId: string;
+  status: QueueEntryStatus;
 };
+
+function statusBadgeClass(status: QueueEntryStatus) {
+  switch (status) {
+    case "WAITING":
+      return "border-sky-400/35 bg-sky-500/15 text-sky-200/95";
+    case "IN_PROGRESS":
+      return "border-amber-400/35 bg-amber-500/15 text-amber-100/95";
+    case "RESOLVED":
+      return "border-emerald-400/35 bg-emerald-500/15 text-emerald-100/95";
+    case "SKIPPED":
+      return "border-white/20 bg-white/10 text-white/70";
+    case "NO_SHOW":
+      return "border-rose-400/30 bg-rose-500/15 text-rose-200/90";
+    default:
+      return "border-white/15 bg-white/5 text-white/60";
+  }
+}
+
+function statusLabel(status: QueueEntryStatus) {
+  switch (status) {
+    case "WAITING":
+      return "Waiting";
+    case "IN_PROGRESS":
+      return "In progress";
+    case "RESOLVED":
+      return "Resolved";
+    case "SKIPPED":
+      return "Skipped";
+    case "NO_SHOW":
+      return "No show";
+    default:
+      return status;
+  }
+}
+
+function QueueStatusBadge({ status }: { status: QueueEntryStatus }) {
+  return (
+    <span
+      className={`inline-flex rounded-full border px-2.5 py-0.5 text-xs font-medium tabular-nums ${statusBadgeClass(status)}`}
+    >
+      {statusLabel(status)}
+    </span>
+  );
+}
 
 type Props = {
   courseId: string;
@@ -53,7 +106,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
     return () => window.clearInterval(id);
   }, [refresh]);
 
-  const inQueue = entries.some((e) => e.studentId === userId);
+  const inQueue = entries.some((e) => e.studentId === userId && e.status === "WAITING");
 
   async function joinQueue() {
     setLoading(true);
@@ -107,12 +160,13 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
             <tr className="border-b border-white/10 bg-white/[0.04] text-xs font-semibold uppercase tracking-wide text-white/55">
               <th className="px-3 py-2.5 font-serif">Rank</th>
               <th className="px-3 py-2.5 font-serif">Name</th>
+              <th className="px-3 py-2.5 font-serif">Status</th>
             </tr>
           </thead>
           <tbody>
             {entries.length === 0 ? (
               <tr>
-                <td colSpan={2} className="px-3 py-6 text-center text-white/50 font-serif">
+                <td colSpan={3} className="px-3 py-6 text-center text-white/50 font-serif">
                   No one is waiting right now.
                 </td>
               </tr>
@@ -124,6 +178,9 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
                 >
                   <td className="px-3 py-2.5 tabular-nums text-white/70">{row.rank}</td>
                   <td className="px-3 py-2.5 text-white/85">{row.displayName}</td>
+                  <td className="px-3 py-2.5">
+                    <QueueStatusBadge status={row.status} />
+                  </td>
                 </tr>
               ))
             )}

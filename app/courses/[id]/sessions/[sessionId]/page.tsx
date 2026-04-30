@@ -78,6 +78,7 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
     select: {
       id: true,
       studentId: true,
+      status: true,
       student: { select: { name: true } },
     },
   });
@@ -87,6 +88,7 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
     rank: index + 1,
     displayName: queueStudentDisplayName(e.student.name),
     studentId: e.studentId,
+    status: e.status,
   }));
 
   const range = `${session.startTime.toLocaleString()} – ${session.endTime.toLocaleString()}`;

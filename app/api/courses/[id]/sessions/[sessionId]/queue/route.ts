@@ -69,6 +69,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     select: {
       id: true,
       studentId: true,
+      status: true,
       student: { select: { name: true } },
     },
   });
@@ -78,6 +79,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     rank: index + 1,
     displayName: queueStudentDisplayName(e.student.name),
     studentId: e.studentId,
+    status: e.status,
   }));
 
   return NextResponse.json({ entries: rows });
@@ -120,6 +122,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
       select: {
         id: true,
         studentId: true,
+        status: true,
         student: { select: { name: true } },
       },
     });
@@ -128,6 +131,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
       rank: index + 1,
       displayName: queueStudentDisplayName(e.student.name),
       studentId: e.studentId,
+      status: e.status,
     }));
     return NextResponse.json({ entries: rows, joined: false });
   }
@@ -146,6 +150,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
     select: {
       id: true,
       studentId: true,
+      status: true,
       student: { select: { name: true } },
     },
   });
@@ -154,6 +159,7 @@ export async function POST(_request: Request, { params }: RouteContext) {
     rank: index + 1,
     displayName: queueStudentDisplayName(e.student.name),
     studentId: e.studentId,
+    status: e.status,
   }));
 
   return NextResponse.json({ entries: rows, joined: true });
@@ -195,6 +201,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     select: {
       id: true,
       studentId: true,
+      status: true,
       student: { select: { name: true } },
     },
   });
@@ -203,6 +210,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     rank: index + 1,
     displayName: queueStudentDisplayName(e.student.name),
     studentId: e.studentId,
+    status: e.status,
   }));
 
   return NextResponse.json({ entries: rows });
