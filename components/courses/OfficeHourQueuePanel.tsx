@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { QueueApiRow } from "@/lib/queue-session";
 
 /** Matches Prisma `QueueStatus`. */
 export type QueueEntryStatus =
@@ -10,13 +11,7 @@ export type QueueEntryStatus =
   | "SKIPPED"
   | "NO_SHOW";
 
-export type QueueRow = {
-  id: string;
-  rank: number;
-  displayName: string;
-  studentId: string;
-  status: QueueEntryStatus;
-};
+export type QueueRow = QueueApiRow;
 
 function statusBadgeClass(status: QueueEntryStatus) {
   switch (status) {
@@ -75,9 +70,12 @@ const POLL_MS = 4000;
 export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initialEntries }: Props) {
   const [entries, setEntries] = useState<QueueRow[]>(initialEntries);
   const [loading, setLoading] = useState(false);
+  const [staffLoading, setStaffLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const queueUrl = `/api/courses/${courseId}/sessions/${sessionId}/queue`;
+  const attendNextUrl = `/api/courses/${courseId}/sessions/${sessionId}/queue/attend-next`;
+  const resolveCurrentUrl = `/api/courses/${courseId}/sessions/${sessionId}/queue/resolve-current`;
 
   const refresh = useCallback(async () => {
     try {
@@ -106,7 +104,12 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
     return () => window.clearInterval(id);
   }, [refresh]);
 
-  const inQueue = entries.some((e) => e.studentId === userId && e.status === "WAITING");
+  const userIsWaiting = entries.some((e) => e.studentId === userId && e.status === "WAITING");
+  const userIsInProgress = entries.some((e) => e.studentId === userId && e.status === "IN_PROGRESS");
+  const canJoinQueue =
+    role === "STUDENT" && !userIsWaiting && !userIsInProgress;
+  const hasInProgress = entries.some((e) => e.status === "IN_PROGRESS");
+  const hasWaiting = entries.some((e) => e.status === "WAITING");
 
   async function joinQueue() {
     setLoading(true);
@@ -144,6 +147,42 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
     }
   }
 
+  async function attendNextStudent() {
+    setStaffLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(attendNextUrl, { method: "POST" });
+      const data = (await res.json().catch(() => null)) as { entries?: QueueRow[]; error?: string } | null;
+      if (!res.ok || !data?.entries) {
+        setError(data?.error ?? "Could not start with the next student");
+        return;
+      }
+      setEntries(data.entries);
+    } catch {
+      setError("Could not start with the next student");
+    } finally {
+      setStaffLoading(false);
+    }
+  }
+
+  async function resolveCurrentStudent() {
+    setStaffLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(resolveCurrentUrl, { method: "POST" });
+      const data = (await res.json().catch(() => null)) as { entries?: QueueRow[]; error?: string } | null;
+      if (!res.ok || !data?.entries) {
+        setError(data?.error ?? "Could not mark as resolved");
+        return;
+      }
+      setEntries(data.entries);
+    } catch {
+      setError("Could not mark as resolved");
+    } finally {
+      setStaffLoading(false);
+    }
+  }
+
   const isStaff = role === "TA" || role === "INSTRUCTOR";
 
   return (
@@ -167,7 +206,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
             {entries.length === 0 ? (
               <tr>
                 <td colSpan={3} className="px-3 py-6 text-center text-white/50 font-serif">
-                  No one is waiting right now.
+                  No active students in the queue.
                 </td>
               </tr>
             ) : (
@@ -176,7 +215,9 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
                   key={row.id}
                   className="border-t border-white/10 font-serif transition hover:bg-white/[0.03]"
                 >
-                  <td className="px-3 py-2.5 tabular-nums text-white/70">{row.rank}</td>
+                  <td className="px-3 py-2.5 tabular-nums text-white/70">
+                    {row.rank != null ? row.rank : "—"}
+                  </td>
                   <td className="px-3 py-2.5 text-white/85">{row.displayName}</td>
                   <td className="px-3 py-2.5">
                     <QueueStatusBadge status={row.status} />
@@ -190,7 +231,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
 
       <div className="flex flex-wrap items-center gap-3">
         {role === "STUDENT" ? (
-          inQueue ? (
+          userIsWaiting ? (
             <button
               type="button"
               onClick={() => void leaveQueue()}
@@ -199,7 +240,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
             >
               Leave Queue
             </button>
-          ) : (
+          ) : canJoinQueue ? (
             <button
               type="button"
               onClick={() => void joinQueue()}
@@ -208,17 +249,30 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
             >
               Join Queue
             </button>
-          )
+          ) : userIsInProgress ? (
+            <p className="text-sm text-white/55">You are being helped.</p>
+          ) : null
         ) : null}
 
         {isStaff ? (
-          <button
-            type="button"
-            onClick={() => {}}
-            className="rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white/70 transition hover:border-white/25 hover:bg-white/10"
-          >
-            Pop
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={() => void attendNextStudent()}
+              disabled={staffLoading || !hasWaiting || hasInProgress}
+              className="rounded-lg border border-[#4ea0ff]/45 bg-[#4ea0ff]/15 px-4 py-2 text-sm font-semibold text-[#b8d9ff] transition hover:border-[#4ea0ff]/65 hover:bg-[#4ea0ff]/25 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Attend next student
+            </button>
+            <button
+              type="button"
+              onClick={() => void resolveCurrentStudent()}
+              disabled={staffLoading || !hasInProgress}
+              className="rounded-lg border border-emerald-400/40 bg-emerald-600/25 px-4 py-2 text-sm font-semibold text-emerald-100/95 transition hover:bg-emerald-600/40 disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              Resolved
+            </button>
+          </>
         ) : null}
       </div>
     </div>

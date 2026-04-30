@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { queueStudentDisplayName } from "@/lib/queue-display";
+import { getQueueRowsForSession } from "@/lib/queue-session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -60,29 +60,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
-  const entries = await prisma.queueEntry.findMany({
-    where: {
-      sessionId,
-      status: "WAITING",
-    },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      studentId: true,
-      status: true,
-      student: { select: { name: true } },
-    },
-  });
-
-  const rows = entries.map((e, index) => ({
-    id: e.id,
-    rank: index + 1,
-    displayName: queueStudentDisplayName(e.student.name),
-    studentId: e.studentId,
-    status: e.status,
-  }));
-
-  return NextResponse.json({ entries: rows });
+  const entries = await getQueueRowsForSession(sessionId);
+  return NextResponse.json({ entries });
 }
 
 export async function POST(_request: Request, { params }: RouteContext) {
@@ -103,66 +82,35 @@ export async function POST(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
+  const inProgress = await prisma.queueEntry.findFirst({
+    where: { sessionId, studentId: userId, status: "IN_PROGRESS" },
+    select: { id: true },
+  });
+  if (inProgress) {
+    return NextResponse.json({ error: "You are already being attended." }, { status: 409 });
+  }
+
   const existing = await prisma.queueEntry.findFirst({
     where: {
       sessionId,
       studentId: userId,
       status: "WAITING",
     },
-    select: {
-      id: true,
-      student: { select: { name: true } },
-    },
+    select: { id: true },
   });
 
-  if (existing) {
-    const entries = await prisma.queueEntry.findMany({
-      where: { sessionId, status: "WAITING" },
-      orderBy: { createdAt: "asc" },
-      select: {
-        id: true,
-        studentId: true,
-        status: true,
-        student: { select: { name: true } },
+  if (!existing) {
+    await prisma.queueEntry.create({
+      data: {
+        sessionId,
+        studentId: userId,
+        status: "WAITING",
       },
     });
-    const rows = entries.map((e, index) => ({
-      id: e.id,
-      rank: index + 1,
-      displayName: queueStudentDisplayName(e.student.name),
-      studentId: e.studentId,
-      status: e.status,
-    }));
-    return NextResponse.json({ entries: rows, joined: false });
   }
 
-  await prisma.queueEntry.create({
-    data: {
-      sessionId,
-      studentId: userId,
-      status: "WAITING",
-    },
-  });
-
-  const entries = await prisma.queueEntry.findMany({
-    where: { sessionId, status: "WAITING" },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      studentId: true,
-      status: true,
-      student: { select: { name: true } },
-    },
-  });
-  const rows = entries.map((e, index) => ({
-    id: e.id,
-    rank: index + 1,
-    displayName: queueStudentDisplayName(e.student.name),
-    studentId: e.studentId,
-    status: e.status,
-  }));
-
-  return NextResponse.json({ entries: rows, joined: true });
+  const entries = await getQueueRowsForSession(sessionId);
+  return NextResponse.json({ entries, joined: !existing });
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
@@ -195,23 +143,6 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Not in queue" }, { status: 404 });
   }
 
-  const entries = await prisma.queueEntry.findMany({
-    where: { sessionId, status: "WAITING" },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      studentId: true,
-      status: true,
-      student: { select: { name: true } },
-    },
-  });
-  const rows = entries.map((e, index) => ({
-    id: e.id,
-    rank: index + 1,
-    displayName: queueStudentDisplayName(e.student.name),
-    studentId: e.studentId,
-    status: e.status,
-  }));
-
-  return NextResponse.json({ entries: rows });
+  const entries = await getQueueRowsForSession(sessionId);
+  return NextResponse.json({ entries });
 }

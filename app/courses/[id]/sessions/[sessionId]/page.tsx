@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { OfficeHourQueuePanel } from "@/components/courses/OfficeHourQueuePanel";
-import { queueStudentDisplayName } from "@/lib/queue-display";
+import { getQueueRowsForSession } from "@/lib/queue-session";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -72,24 +72,7 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
     redirect(`/courses/${courseId}/sessions`);
   }
 
-  const waitingEntries = await prisma.queueEntry.findMany({
-    where: { sessionId, status: "WAITING" },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      studentId: true,
-      status: true,
-      student: { select: { name: true } },
-    },
-  });
-
-  const initialQueueRows = waitingEntries.map((e, index) => ({
-    id: e.id,
-    rank: index + 1,
-    displayName: queueStudentDisplayName(e.student.name),
-    studentId: e.studentId,
-    status: e.status,
-  }));
+  const initialQueueRows = await getQueueRowsForSession(sessionId);
 
   const range = `${session.startTime.toLocaleString()} – ${session.endTime.toLocaleString()}`;
 
