@@ -53,12 +53,15 @@ _Join the queue, see your position, leave if needed_
 
 ### TA View
 
+![Instructor view](screenshots/ta_view.png)
+
 _TAs see all waiting students, click "Next" to help_
 
 ### Instructor View
 
-_Instructors can add students/TAs/other instructors to this course and add
-more office hour sessions_
+![Instructor view](screenshots/instructor_view.png)
+
+_Instructors can add students/TAs/other instructors to this course and add more office hour sessions_
 
 ---
 
@@ -73,7 +76,6 @@ more office hour sessions_
 2. **Role-based permissions at scale**
     - Student can be TA in one course, student in another
     - Implemented via `CourseMembership` junction table
-    - API routes validate role per-request via NextAuth session
 
 3. **Queue ordering logic**
     - In-progress students shown first (TAs see who they're helping)
