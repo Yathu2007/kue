@@ -46,9 +46,11 @@ So I built **Kue**.
 ### Student View
 
 ![Dashboard showing courses](screenshots/dashboard.png)
+
 _Students see their courses with role badges_
 
 ![Live queue](screenshots/queue-student.png)
+
 _Join the queue, see your position, leave if needed_
 
 ### TA View
