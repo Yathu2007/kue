@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
 type EnrollmentRow = {
@@ -49,6 +49,21 @@ function formatName(name: string | null, email: string) {
   return name?.trim() || email;
 }
 
+const IMPORT_ROLES = ["STUDENT", "TA", "INSTRUCTOR"];
+
+function parseEnrollmentCsv(text: string) {
+  const rows: { email: string; role: string }[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const [emailRaw, roleRaw] = trimmed.split(",");
+    const email = (emailRaw ?? "").trim();
+    if (!email.includes("@")) continue; // skips a header row like "email,role"
+    rows.push({ email, role: (roleRaw ?? "").trim() });
+  }
+  return rows;
+}
+
 function formatRange(startIso: string, endIso: string) {
   const start = new Date(startIso);
   const end = new Date(endIso);
@@ -78,6 +93,11 @@ export function InstructorCourseDetail({
   const [deleteEnrollmentError, setDeleteEnrollmentError] = useState<
     string | null
   >(null);
+
+  const csvInputRef = useRef<HTMLInputElement>(null);
+  const [isImportingCsv, setIsImportingCsv] = useState(false);
+  const [csvImportStatus, setCsvImportStatus] = useState<string | null>(null);
+  const [csvImportError, setCsvImportError] = useState<string | null>(null);
 
   const [assigneeId, setAssigneeId] = useState(staffOptions[0]?.id ?? "");
   const [officeHourDate, setOfficeHourDate] = useState("");
@@ -160,6 +180,80 @@ export function InstructorCourseDetail({
       setEnrollError("Network error while enrolling user.");
     } finally {
       setIsSubmittingEnroll(false);
+    }
+  }
+
+  async function handleCsvImport(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setCsvImportError(null);
+    setCsvImportStatus(null);
+    setIsImportingCsv(true);
+
+    try {
+      const rows = parseEnrollmentCsv(await file.text());
+
+      if (!rows.length) {
+        setCsvImportError("No valid rows found. Expected format: email,role");
+        return;
+      }
+
+      const res = await fetch(`/api/courses/${courseId}/enroll/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rows }),
+      });
+
+      const payload = (await res.json()) as {
+        error?: string;
+        results?: Array<{
+          email: string;
+          status: "created" | "exists" | "error";
+          error?: string;
+          membership?: EnrollmentRow;
+        }>;
+      };
+
+      if (!res.ok) {
+        setCsvImportError(payload.error ?? "Could not import CSV.");
+        return;
+      }
+
+      const results = payload.results ?? [];
+
+      setEnrollments((current) => {
+        let next = current;
+        for (const result of results) {
+          if (!result.membership) continue;
+          const existingIdx = next.findIndex((row) => row.id === result.membership!.id);
+          if (existingIdx >= 0) {
+            next = [...next];
+            next[existingIdx] = result.membership;
+          } else {
+            next = [result.membership, ...next];
+          }
+        }
+        return next;
+      });
+
+      const createdCount = results.filter((r) => r.status === "created").length;
+      const existsCount = results.filter((r) => r.status === "exists").length;
+      const errors = results.filter((r) => r.status === "error");
+
+      setCsvImportStatus(
+        `${createdCount} enrolled, ${existsCount} already enrolled${
+          errors.length ? `, ${errors.length} failed` : ""
+        }.`,
+      );
+      if (errors.length) {
+        setCsvImportError(errors.map((e) => `${e.email || "(blank)"}: ${e.error}`).join("; "));
+      }
+    } catch {
+      setCsvImportError("Network error while importing CSV.");
+    } finally {
+      setIsImportingCsv(false);
     }
   }
 
@@ -396,6 +490,31 @@ export function InstructorCourseDetail({
             {enrollStatus ? <p className="mt-2 text-sm text-emerald-300">{enrollStatus}</p> : null}
             {deleteEnrollmentError ? (
               <p className="mt-2 text-sm text-red-300">{deleteEnrollmentError}</p>
+            ) : null}
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/10 pt-4">
+              <input
+                ref={csvInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={handleCsvImport}
+              />
+              <button
+                type="button"
+                onClick={() => csvInputRef.current?.click()}
+                disabled={isImportingCsv}
+                className="rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] disabled:opacity-60"
+              >
+                {isImportingCsv ? "Importing..." : "Import from CSV"}
+              </button>
+              <span className="text-xs text-white/50">
+                Format: email,role — role is {IMPORT_ROLES.join("/").toLowerCase()}
+              </span>
+            </div>
+            {csvImportError ? <p className="mt-2 text-sm text-red-300">{csvImportError}</p> : null}
+            {csvImportStatus ? (
+              <p className="mt-2 text-sm text-emerald-300">{csvImportStatus}</p>
             ) : null}
           </article>
 
