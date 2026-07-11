@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   CourseCard,
   type CourseCardRole,
 } from "@/components/courses/CourseCard";
 import { UserMenu } from "@/components/dashboard/UserMenu";
+import { getCoursesForUser, type MyCourse } from "@/lib/my-courses";
 import { prisma } from "@/lib/prisma";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -14,15 +14,7 @@ export const metadata: Metadata = {
   description: "Your courses and office hours",
 };
 
-type MyCoursesResponse = Array<{
-  id: string;
-  code: string;
-  name: string;
-  semester: string;
-  role: "STUDENT" | "TA" | "INSTRUCTOR";
-}>;
-
-function mapRole(role: MyCoursesResponse[number]["role"]): CourseCardRole {
+function mapRole(role: MyCourse["role"]): CourseCardRole {
   if (role === "STUDENT") return "student";
   if (role === "TA") return "ta";
   return "professor";
@@ -36,26 +28,15 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { name: true },
-  });
+  const [dbUser, memberships] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: user.id },
+      select: { name: true },
+    }),
+    getCoursesForUser(user.id),
+  ]);
 
   const displayName = dbUser?.name ?? user.email?.split("@")[0] ?? "there";
-
-  const h = await headers();
-  const host = h.get("host");
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const baseUrl = host ? `${proto}://${host}` : "http://localhost:3000";
-
-  const coursesRes = await fetch(`${baseUrl}/api/my-courses`, {
-    cache: "no-store",
-    headers: {
-      cookie: h.get("cookie") ?? "",
-    },
-  });
-
-  const memberships = (await coursesRes.json()) as MyCoursesResponse;
 
   return (
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
