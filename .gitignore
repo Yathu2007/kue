@@ -47,3 +47,4 @@ test-supabase.mjs
 test-prisma.js
 
 .cursor
+CLAUDE.md

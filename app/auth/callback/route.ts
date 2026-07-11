@@ -37,52 +37,7 @@ export async function GET(request: Request) {
           where: { email: normalizedEmail },
         });
 
-        // #region agent log
-        fetch("http://127.0.0.1:7292/ingest/83df7abe-461e-4679-bb9b-ba365b99b749", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "44d3e8",
-          },
-          body: JSON.stringify({
-            sessionId: "44d3e8",
-            hypothesisId: "H1",
-            location: "auth/callback:merge-lookup",
-            message: "preEnrolled vs auth user",
-            data: {
-              hasPreEnrolled: Boolean(preEnrolled),
-              preIdTail: preEnrolled?.id?.slice(-8),
-              authIdTail: user.id?.slice(-8),
-              idsDiffer: Boolean(preEnrolled && preEnrolled.id !== user.id),
-            },
-            timestamp: Date.now(),
-          }),
-        }).catch(() => {});
-        // #endregion
-
         if (preEnrolled && preEnrolled.id !== user.id) {
-          const authRowBefore = await tx.user.findUnique({
-            where: { id: user.id },
-            select: { id: true },
-          });
-          // #region agent log
-          fetch("http://127.0.0.1:7292/ingest/83df7abe-461e-4679-bb9b-ba365b99b749", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "44d3e8",
-            },
-            body: JSON.stringify({
-              sessionId: "44d3e8",
-              hypothesisId: "H1",
-              location: "auth/callback:before-merge-reassign",
-              message: "auth user row must exist before FK updates",
-              data: { authRowExists: Boolean(authRowBefore) },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
-
           const mergeSlotEmail = `__merge_${preEnrolled.id}@__kue.internal`;
           await tx.user.update({
             where: { id: preEnrolled.id },
@@ -121,23 +76,6 @@ export async function GET(request: Request) {
             data: { userId: user.id },
           });
           await tx.user.delete({ where: { id: preEnrolled.id } });
-          // #region agent log
-          fetch("http://127.0.0.1:7292/ingest/83df7abe-461e-4679-bb9b-ba365b99b749", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "44d3e8",
-            },
-            body: JSON.stringify({
-              sessionId: "44d3e8",
-              hypothesisId: "H1",
-              location: "auth/callback:merge-done",
-              message: "placeholder merged into auth user",
-              data: { ok: true },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
         } else {
           await tx.user.upsert({
             where: { id: user.id },
@@ -151,23 +89,6 @@ export async function GET(request: Request) {
               name: derivedName,
             },
           });
-          // #region agent log
-          fetch("http://127.0.0.1:7292/ingest/83df7abe-461e-4679-bb9b-ba365b99b749", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "44d3e8",
-            },
-            body: JSON.stringify({
-              sessionId: "44d3e8",
-              hypothesisId: "H4",
-              location: "auth/callback:simple-upsert",
-              message: "no merge path",
-              data: { ok: true },
-              timestamp: Date.now(),
-            }),
-          }).catch(() => {});
-          // #endregion
         }
       });
     }
