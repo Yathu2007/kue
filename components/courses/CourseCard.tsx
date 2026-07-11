@@ -50,7 +50,7 @@ export function CourseCard({
     </>
   );
 
-  const shellClass = `group block rounded-xl border border-[#4ea0ff]/25 bg-[#0c0b14]/90 p-5 shadow-[0_0_0_1px_rgba(78,160,255,0.06)] transition-all duration-200 ease-out hover:border-[#4ea0ff]/55 hover:bg-[#12111c] hover:shadow-[0_0_24px_rgba(78,160,255,0.18)] focus-visible:border-[#94BFFF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#94BFFF]/40 ${className}`;
+  const shellClass = `group block rounded-xl border border-[#4ea0ff]/25 bg-[#0c0b14]/90 p-5 shadow-[0_0_0_1px_rgba(78,160,255,0.06)] transition-all duration-300 ease-out hover:-translate-y-1 hover:border-[#4ea0ff]/55 hover:bg-[#12111c] hover:shadow-[0_8px_28px_rgba(78,160,255,0.22)] active:translate-y-0 active:scale-[0.99] focus-visible:border-[#94BFFF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#94BFFF]/40 ${className}`;
 
   if (href) {
     return (

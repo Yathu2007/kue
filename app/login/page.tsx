@@ -58,7 +58,7 @@ export default function LoginPage() {
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#04030D] px-6">
       <div className="subtle-bg-pattern pointer-events-none absolute inset-0" />
 
-      <section className="relative z-10 w-full max-w-xl rounded-2xl border border-white/10 bg-[#0c0b14]/90 p-8 shadow-[0_0_0_1px_rgba(78,160,255,0.06)]">
+      <section className="fade-in-up relative z-10 w-full max-w-xl rounded-2xl border border-white/10 bg-[#0c0b14]/90 p-8 shadow-[0_0_0_1px_rgba(78,160,255,0.06)]">
         <h1 className="font-[family-name:var(--font-kalam)] text-4xl font-medium text-white">
           Join Kue
         </h1>
@@ -70,7 +70,7 @@ export default function LoginPage() {
           <label className="block text-sm font-medium text-white/80">
             UofT email
           </label>
-          <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-[#4ea0ff]/40 bg-[#dadada]">
+          <div className="mt-2 flex items-center overflow-hidden rounded-xl border border-[#4ea0ff]/40 bg-[#dadada] transition-all duration-200 focus-within:border-[#4ea0ff]/80 focus-within:shadow-[0_0_16px_rgba(78,160,255,0.25)]">
             <input
               type="email"
               autoComplete="email"
@@ -83,7 +83,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={status === "sending"}
-              className="m-1 flex h-10 items-center justify-center rounded-lg bg-[#94BFFF] px-4 text-sm font-semibold text-white shadow-[0_4px_10px_rgba(148,191,255,0.45)] transition-all duration-150 ease-out hover:bg-[#a5c9ff] disabled:cursor-not-allowed disabled:opacity-70"
+              className="m-1 flex h-10 items-center justify-center rounded-lg bg-[#94BFFF] px-4 text-sm font-semibold text-white shadow-[0_4px_10px_rgba(148,191,255,0.45)] transition-all duration-200 ease-out hover:bg-[#a5c9ff] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {status === "sending" ? "Sending…" : "Send link"}
             </button>
@@ -103,7 +103,7 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => router.push("/")}
-          className="mt-6 text-sm font-medium text-white/60 underline underline-offset-4 hover:text-white/80"
+          className="mt-6 text-sm font-medium text-white/60 underline underline-offset-4 transition-colors duration-200 hover:text-white"
         >
           Back to home
         </button>

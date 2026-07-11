@@ -82,13 +82,18 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
       <div className="relative z-10 mx-auto max-w-2xl space-y-6">
         <Link
           href={`/courses/${courseId}/sessions`}
-          className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+          className="group inline-flex items-center gap-2 text-sm text-white/70 transition-colors duration-200 hover:text-white"
         >
-          <span aria-hidden>←</span>
+          <span
+            aria-hidden
+            className="transition-transform duration-200 group-hover:-translate-x-0.5"
+          >
+            ←
+          </span>
           Back to office hour sessions
         </Link>
 
-        <article className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
+        <article className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
           <p className="text-sm font-medium uppercase tracking-wide text-[#94BFFF]/90">
             {session.course.code}
           </p>

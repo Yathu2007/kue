@@ -46,7 +46,7 @@ export function OfficeHourSessionsTable({ courseId, rows }: Props) {
           {rows.map((row) => (
             <tr
               key={row.id}
-              className="border-t border-white/10 text-white/75 transition hover:bg-white/[0.03]"
+              className="row-enter border-t border-white/10 text-white/75 transition-colors duration-200 hover:bg-white/[0.03]"
             >
               <td className="px-3 py-3">{row.assigneeDisplayName}</td>
               <td className="px-3 py-3">{row.assigneeRoleLabel}</td>
@@ -60,10 +60,15 @@ export function OfficeHourSessionsTable({ courseId, rows }: Props) {
               <td className="px-3 py-3">
                 <Link
                   href={`/courses/${courseId}/sessions/${row.id}`}
-                  className="inline-flex items-center gap-1 rounded-lg border border-[#4ea0ff]/40 bg-[#4ea0ff]/10 px-3 py-1.5 text-xs font-semibold text-[#b8d9ff] transition hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/20"
+                  className="group inline-flex items-center gap-1 rounded-lg border border-[#4ea0ff]/40 bg-[#4ea0ff]/10 px-3 py-1.5 text-xs font-semibold text-[#b8d9ff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/20 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97]"
                 >
                   Open queue
-                  <span aria-hidden>→</span>
+                  <span
+                    aria-hidden
+                    className="transition-transform duration-200 group-hover:translate-x-0.5"
+                  >
+                    →
+                  </span>
                 </Link>
               </td>
             </tr>

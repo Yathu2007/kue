@@ -144,14 +144,19 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
-        <header className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
+        <header className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+                className="group inline-flex items-center gap-2 text-sm text-white/70 transition-colors duration-200 hover:text-white"
               >
-                <span aria-hidden>←</span>
+                <span
+                  aria-hidden
+                  className="transition-transform duration-200 group-hover:-translate-x-0.5"
+                >
+                  ←
+                </span>
                 Back to dashboard
               </Link>
               <h1 className="mt-4 font-mono text-2xl text-[#94BFFF]">
@@ -162,7 +167,7 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
             {membership.role === "INSTRUCTOR" ? (
               <Link
                 href={`/courses/${courseId}`}
-                className="shrink-0 self-start rounded-lg border border-amber-400/35 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-100 transition hover:bg-amber-400/15"
+                className="shrink-0 self-start rounded-lg border border-amber-400/35 bg-amber-400/10 px-4 py-2 text-sm font-semibold text-amber-100 transition-all duration-200 hover:border-amber-400/55 hover:bg-amber-400/15 active:scale-[0.97]"
               >
                 Instructor tools
               </Link>
@@ -171,7 +176,9 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
           <h2 className="mt-6 text-lg font-semibold text-white">Office hour sessions</h2>
         </header>
 
-        <OfficeHourSessionsTable courseId={courseId} rows={rows} />
+        <div className="fade-in-up" style={{ animationDelay: "120ms" }}>
+          <OfficeHourSessionsTable courseId={courseId} rows={rows} />
+        </div>
       </div>
     </main>
   );

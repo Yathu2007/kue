@@ -390,18 +390,23 @@ export function InstructorCourseDetail({
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
-        <header className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
+        <header className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 text-sm text-white/70 transition hover:text-white"
+              className="group inline-flex items-center gap-2 text-sm text-white/70 transition-colors duration-200 hover:text-white"
             >
-              <span aria-hidden>←</span>
+              <span
+                aria-hidden
+                className="transition-transform duration-200 group-hover:-translate-x-0.5"
+              >
+                ←
+              </span>
               Back to dashboard
             </Link>
             <Link
               href={`/courses/${courseId}/sessions`}
-              className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 transition hover:border-[#4ea0ff]/45 hover:bg-white/10"
+              className="inline-flex items-center justify-center rounded-lg border border-white/20 bg-white/5 px-4 py-2 text-sm font-semibold text-white/90 transition-all duration-200 hover:border-[#4ea0ff]/45 hover:bg-white/10 active:scale-[0.97]"
             >
               Student view now
             </Link>
@@ -416,7 +421,10 @@ export function InstructorCourseDetail({
         </header>
 
         <section className="grid gap-6 lg:grid-cols-2">
-          <article className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5">
+          <article
+            className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5"
+            style={{ animationDelay: "100ms" }}
+          >
             <h2 className="mb-4 text-lg font-semibold text-white">Course Enrollment</h2>
             <div className="overflow-x-auto rounded-lg border border-white/10">
               <table className="min-w-full text-left text-sm">
@@ -439,7 +447,7 @@ export function InstructorCourseDetail({
                           type="button"
                           onClick={() => handleDeleteEnrollment(row.id)}
                           disabled={deletingEnrollmentId === row.id}
-                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition hover:bg-red-400/15 disabled:opacity-60"
+                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition-all duration-200 hover:border-red-400/50 hover:bg-red-400/20 active:scale-[0.96] disabled:opacity-60"
                         >
                           Delete
                         </button>
@@ -481,7 +489,7 @@ export function InstructorCourseDetail({
               <button
                 type="submit"
                 disabled={isSubmittingEnroll}
-                className="rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] disabled:opacity-60"
+                className="rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/30 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97] disabled:opacity-60"
               >
                 +
               </button>
@@ -504,7 +512,7 @@ export function InstructorCourseDetail({
                 type="button"
                 onClick={() => csvInputRef.current?.click()}
                 disabled={isImportingCsv}
-                className="rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] disabled:opacity-60"
+                className="rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/30 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97] disabled:opacity-60"
               >
                 {isImportingCsv ? "Importing..." : "Import from CSV"}
               </button>
@@ -518,7 +526,10 @@ export function InstructorCourseDetail({
             ) : null}
           </article>
 
-          <article className="rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5">
+          <article
+            className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5"
+            style={{ animationDelay: "180ms" }}
+          >
             <h2 className="mb-4 text-lg font-semibold text-white">Office Hour Sessions</h2>
             <div className="overflow-x-auto rounded-lg border border-white/10">
               <table className="min-w-full text-left text-sm">
@@ -545,7 +556,7 @@ export function InstructorCourseDetail({
                           type="button"
                           onClick={() => handleDeleteOfficeHour(row.id)}
                           disabled={deletingOfficeHourId === row.id}
-                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition hover:bg-red-400/15 disabled:opacity-60"
+                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition-all duration-200 hover:border-red-400/50 hover:bg-red-400/20 active:scale-[0.96] disabled:opacity-60"
                         >
                           Delete
                         </button>
@@ -616,7 +627,7 @@ export function InstructorCourseDetail({
               <button
                 type="submit"
                 disabled={isSubmittingOfficeHour || !staffOptions.length}
-                className="w-fit rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] disabled:opacity-60"
+                className="w-fit rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/30 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97] disabled:opacity-60"
               >
                 +
               </button>

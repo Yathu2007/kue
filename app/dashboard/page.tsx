@@ -61,7 +61,7 @@ export default async function DashboardPage() {
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">
       <div className="subtle-bg-pattern pointer-events-none fixed inset-0 opacity-25" />
       <div className="relative z-10 mx-auto max-w-5xl">
-        <header className="mb-10 border-b border-white/10 pb-8">
+        <header className="fade-in-up mb-10 border-b border-white/10 pb-8">
           <div className="flex items-start justify-between gap-6">
             <div>
               <p className="text-sm font-medium uppercase tracking-widest text-[#94BFFF]/90">
@@ -89,8 +89,12 @@ export default async function DashboardPage() {
           </h2>
           {memberships.length ? (
             <ul className="grid gap-4 sm:grid-cols-2">
-              {memberships.map((m) => (
-                <li key={m.id}>
+              {memberships.map((m, index) => (
+                <li
+                  key={m.id}
+                  className="fade-in-up"
+                  style={{ animationDelay: `${100 + index * 70}ms` }}
+                >
                   <CourseCard
                     code={m.code}
                     title={m.name}

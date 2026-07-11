@@ -213,7 +213,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               entries.map((row) => (
                 <tr
                   key={row.id}
-                  className="border-t border-white/10 font-serif transition hover:bg-white/[0.03]"
+                  className="row-enter border-t border-white/10 font-serif transition-colors duration-200 hover:bg-white/[0.03]"
                 >
                   <td className="px-3 py-2.5 tabular-nums text-white/70">
                     {row.rank != null ? row.rank : "—"}
@@ -236,7 +236,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               type="button"
               onClick={() => void leaveQueue()}
               disabled={loading}
-              className="rounded-lg border border-rose-400/50 bg-rose-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-rose-400/50 bg-rose-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-rose-600 hover:shadow-[0_4px_14px_rgba(244,63,94,0.3)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Leave Queue
             </button>
@@ -245,7 +245,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               type="button"
               onClick={() => void joinQueue()}
               disabled={loading}
-              className="rounded-lg border border-emerald-400/40 bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-lg border border-emerald-400/40 bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-[0_4px_14px_rgba(16,185,129,0.3)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Join Queue
             </button>
@@ -260,7 +260,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               type="button"
               onClick={() => void attendNextStudent()}
               disabled={staffLoading || !hasWaiting || hasInProgress}
-              className="rounded-lg border border-[#4ea0ff]/45 bg-[#4ea0ff]/15 px-4 py-2 text-sm font-semibold text-[#b8d9ff] transition hover:border-[#4ea0ff]/65 hover:bg-[#4ea0ff]/25 disabled:cursor-not-allowed disabled:opacity-45"
+              className="rounded-lg border border-[#4ea0ff]/45 bg-[#4ea0ff]/15 px-4 py-2 text-sm font-semibold text-[#b8d9ff] transition-all duration-200 hover:border-[#4ea0ff]/65 hover:bg-[#4ea0ff]/25 hover:shadow-[0_4px_14px_rgba(78,160,255,0.25)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
             >
               Attend next student
             </button>
@@ -268,7 +268,7 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               type="button"
               onClick={() => void resolveCurrentStudent()}
               disabled={staffLoading || !hasInProgress}
-              className="rounded-lg border border-emerald-400/40 bg-emerald-600/25 px-4 py-2 text-sm font-semibold text-emerald-100/95 transition hover:bg-emerald-600/40 disabled:cursor-not-allowed disabled:opacity-45"
+              className="rounded-lg border border-emerald-400/40 bg-emerald-600/25 px-4 py-2 text-sm font-semibold text-emerald-100/95 transition-all duration-200 hover:bg-emerald-600/40 hover:shadow-[0_4px_14px_rgba(16,185,129,0.2)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-45"
             >
               Resolved
             </button>
