@@ -115,6 +115,8 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
             userId={user.id}
             role={membership.role}
             initialEntries={initialQueueRows}
+            sessionStartIso={session.startTime.toISOString()}
+            sessionEndIso={session.endTime.toISOString()}
           />
         </article>
       </div>

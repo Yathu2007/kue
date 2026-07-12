@@ -34,12 +34,15 @@ async function requireCourseAccess(courseId: string, userId: string) {
   return membership;
 }
 
-async function assertSessionInCourse(courseId: string, sessionId: string) {
-  const session = await prisma.officeHourSession.findFirst({
+async function getSessionInCourse(courseId: string, sessionId: string) {
+  return prisma.officeHourSession.findFirst({
     where: { id: sessionId, courseId },
-    select: { id: true },
+    select: { id: true, startTime: true, endTime: true },
   });
-  return session !== null;
+}
+
+function isSessionOpen(session: { startTime: Date; endTime: Date }, now = new Date()) {
+  return now >= session.startTime && now <= session.endTime;
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
@@ -55,8 +58,8 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const ok = await assertSessionInCourse(courseId, sessionId);
-  if (!ok) {
+  const session = await getSessionInCourse(courseId, sessionId);
+  if (!session) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 
@@ -77,9 +80,16 @@ export async function POST(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const ok = await assertSessionInCourse(courseId, sessionId);
-  if (!ok) {
+  const session = await getSessionInCourse(courseId, sessionId);
+  if (!session) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  }
+
+  if (!isSessionOpen(session)) {
+    return NextResponse.json(
+      { error: "The queue is closed — office hours are not in session right now." },
+      { status: 409 },
+    );
   }
 
   const inProgress = await prisma.queueEntry.findFirst({
@@ -126,8 +136,8 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const ok = await assertSessionInCourse(courseId, sessionId);
-  if (!ok) {
+  const session = await getSessionInCourse(courseId, sessionId);
+  if (!session) {
     return NextResponse.json({ error: "Session not found" }, { status: 404 });
   }
 

@@ -63,11 +63,21 @@ type Props = {
   userId: string;
   role: "STUDENT" | "TA" | "INSTRUCTOR";
   initialEntries: QueueRow[];
+  sessionStartIso: string;
+  sessionEndIso: string;
 };
 
 const POLL_MS = 4000;
 
-export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initialEntries }: Props) {
+export function OfficeHourQueuePanel({
+  courseId,
+  sessionId,
+  userId,
+  role,
+  initialEntries,
+  sessionStartIso,
+  sessionEndIso,
+}: Props) {
   const [entries, setEntries] = useState<QueueRow[]>(initialEntries);
   const [loading, setLoading] = useState(false);
   const [staffLoading, setStaffLoading] = useState(false);
@@ -106,6 +116,10 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
 
   const userIsWaiting = entries.some((e) => e.studentId === userId && e.status === "WAITING");
   const userIsInProgress = entries.some((e) => e.studentId === userId && e.status === "IN_PROGRESS");
+  // Recomputed on every poll-driven re-render, so the button flips without a manual refresh.
+  const nowMs = Date.now();
+  const sessionIsOpen =
+    nowMs >= Date.parse(sessionStartIso) && nowMs <= Date.parse(sessionEndIso);
   const canJoinQueue =
     role === "STUDENT" && !userIsWaiting && !userIsInProgress;
   const hasInProgress = entries.some((e) => e.status === "IN_PROGRESS");
@@ -241,14 +255,21 @@ export function OfficeHourQueuePanel({ courseId, sessionId, userId, role, initia
               Leave Queue
             </button>
           ) : canJoinQueue ? (
-            <button
-              type="button"
-              onClick={() => void joinQueue()}
-              disabled={loading}
-              className="rounded-lg border border-emerald-400/40 bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-[0_4px_14px_rgba(16,185,129,0.3)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Join Queue
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => void joinQueue()}
+                disabled={loading || !sessionIsOpen}
+                className="rounded-lg border border-emerald-400/40 bg-emerald-600/90 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-emerald-600 hover:shadow-[0_4px_14px_rgba(16,185,129,0.3)] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Join Queue
+              </button>
+              {!sessionIsOpen ? (
+                <p className="text-sm text-white/55">
+                  The queue is closed — office hours are not in session right now.
+                </p>
+              ) : null}
+            </>
           ) : userIsInProgress ? (
             <p className="text-sm text-white/55">You are being helped.</p>
           ) : null

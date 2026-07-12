@@ -118,6 +118,8 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
     timeStyle: "short",
   });
 
+  const now = new Date();
+
   const rows: OfficeHourSessionRow[] = sessions.map((session) => {
     const assigneeRole = roleByUserId.get(session.instructorId);
     const start = session.startTime;
@@ -135,6 +137,7 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
       endLabel: timeFormatter.format(end),
       locationDisplay: session.location?.trim() || "—",
       waitingCount: waitingBySession.get(session.id) ?? 0,
+      isActive: now >= start && now <= end,
     };
   });
 
@@ -177,7 +180,11 @@ export default async function CourseOfficeHourSessionsPage({ params }: PageProps
         </header>
 
         <div className="fade-in-up" style={{ animationDelay: "120ms" }}>
-          <OfficeHourSessionsTable courseId={courseId} rows={rows} />
+          <OfficeHourSessionsTable
+            courseId={courseId}
+            rows={rows}
+            viewerIsStaff={membership.role !== "STUDENT"}
+          />
         </div>
       </div>
     </main>
