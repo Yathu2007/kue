@@ -450,15 +450,137 @@ export function InstructorCourseDetail({
           </p>
         </header>
 
-        <section className="grid gap-6 lg:grid-cols-2">
+        <section className="space-y-6">
           <article
             className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5"
             style={{ animationDelay: "100ms" }}
           >
-            <h2 className="mb-4 text-lg font-semibold text-white">Course Enrollment</h2>
-            <div className="overflow-x-auto rounded-lg border border-white/10">
+            <h2 className="mb-4 text-lg font-semibold text-white">
+              Office Hour Sessions{" "}
+              <span className="text-sm font-normal text-white/45">({officeHours.length})</span>
+            </h2>
+            <div className="themed-scroll max-h-80 overflow-y-auto overflow-x-auto rounded-lg border border-white/10">
               <table className="min-w-full text-left text-sm">
-                <thead className="bg-white/5 text-white/80">
+                <thead className="sticky top-0 z-10 bg-[#15141f] text-white/80 shadow-[0_1px_0_rgba(255,255,255,0.1)]">
+                  <tr>
+                    <th className="px-3 py-2">Instructor/TA</th>
+                    <th className="px-3 py-2">Role</th>
+                    <th className="px-3 py-2">Time</th>
+                    <th className="px-3 py-2">Location</th>
+                    <th className="px-3 py-2 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {officeHours.map((row) => (
+                    <tr key={row.id} className="border-t border-white/10 text-white/75">
+                      <td className="px-3 py-2">{formatName(row.assignee.name, row.assignee.email)}</td>
+                      <td className="px-3 py-2">
+                        {staffOptions.find((s) => s.id === row.assignee.id)?.role ?? "TA"}
+                      </td>
+                      <td className="px-3 py-2">{formatRange(row.startTime, row.endTime)}</td>
+                      <td className="px-3 py-2">{row.location ?? "-"}</td>
+                      <td className="px-3 py-2 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteOfficeHour(row.id)}
+                          disabled={deletingOfficeHourId === row.id}
+                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition-all duration-200 hover:border-red-400/50 hover:bg-red-400/20 active:scale-[0.96] disabled:opacity-60"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {!officeHours.length ? (
+                    <tr>
+                      <td className="px-3 py-3 text-white/50" colSpan={5}>
+                        No sessions configured yet.
+                      </td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+
+            <form onSubmit={handleOfficeHourSubmit} className="mt-4 grid gap-2">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                <ThemedSelect
+                  value={assigneeId}
+                  onChange={(event) => setAssigneeId(event.target.value)}
+                  required
+                >
+                  {staffOptions.map((staff) => (
+                    <option key={staff.id} value={staff.id}>
+                      {formatName(staff.name, staff.email)} ({staff.role})
+                    </option>
+                  ))}
+                </ThemedSelect>
+                <input
+                  value={location}
+                  onChange={(event) => setLocation(event.target.value)}
+                  placeholder="Location"
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
+                />
+                <input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="Optional title"
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
+                />
+              </div>
+              <div className="grid gap-2 sm:grid-cols-3">
+                <input
+                  type="date"
+                  value={officeHourDate}
+                  onChange={(event) => setOfficeHourDate(event.target.value)}
+                  required
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
+                />
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(event) => setStartTime(event.target.value)}
+                  required
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
+                />
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(event) => setEndTime(event.target.value)}
+                  required
+                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSubmittingOfficeHour || !staffOptions.length}
+                className="w-fit rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/30 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97] disabled:opacity-60"
+              >
+                +
+              </button>
+            </form>
+            {officeHourError ? (
+              <p className="mt-2 text-sm text-red-300">{officeHourError}</p>
+            ) : null}
+            {officeHourStatus ? (
+              <p className="mt-2 text-sm text-emerald-300">{officeHourStatus}</p>
+            ) : null}
+            {deleteOfficeHourError ? (
+              <p className="mt-2 text-sm text-red-300">{deleteOfficeHourError}</p>
+            ) : null}
+          </article>
+
+          <article
+            className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5"
+            style={{ animationDelay: "180ms" }}
+          >
+            <h2 className="mb-4 text-lg font-semibold text-white">
+              Course Enrollment{" "}
+              <span className="text-sm font-normal text-white/45">({enrollments.length})</span>
+            </h2>
+            <div className="themed-scroll max-h-80 overflow-y-auto overflow-x-auto rounded-lg border border-white/10">
+              <table className="min-w-full text-left text-sm">
+                <thead className="sticky top-0 z-10 bg-[#15141f] text-white/80 shadow-[0_1px_0_rgba(255,255,255,0.1)]">
                   <tr>
                     <th className="px-3 py-2">Name</th>
                     <th className="px-3 py-2">Email</th>
@@ -552,122 +674,6 @@ export function InstructorCourseDetail({
             {csvImportError ? <p className="mt-2 text-sm text-red-300">{csvImportError}</p> : null}
             {csvImportStatus ? (
               <p className="mt-2 text-sm text-emerald-300">{csvImportStatus}</p>
-            ) : null}
-          </article>
-
-          <article
-            className="fade-in-up rounded-xl border border-white/10 bg-[#0c0b14]/80 p-5"
-            style={{ animationDelay: "180ms" }}
-          >
-            <h2 className="mb-4 text-lg font-semibold text-white">Office Hour Sessions</h2>
-            <div className="overflow-x-auto rounded-lg border border-white/10">
-              <table className="min-w-full text-left text-sm">
-                <thead className="bg-white/5 text-white/80">
-                  <tr>
-                    <th className="px-3 py-2">Instructor/TA</th>
-                    <th className="px-3 py-2">Role</th>
-                    <th className="px-3 py-2">Time</th>
-                    <th className="px-3 py-2">Location</th>
-                    <th className="px-3 py-2 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {officeHours.map((row) => (
-                    <tr key={row.id} className="border-t border-white/10 text-white/75">
-                      <td className="px-3 py-2">{formatName(row.assignee.name, row.assignee.email)}</td>
-                      <td className="px-3 py-2">
-                        {staffOptions.find((s) => s.id === row.assignee.id)?.role ?? "TA"}
-                      </td>
-                      <td className="px-3 py-2">{formatRange(row.startTime, row.endTime)}</td>
-                      <td className="px-3 py-2">{row.location ?? "-"}</td>
-                      <td className="px-3 py-2 text-right">
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteOfficeHour(row.id)}
-                          disabled={deletingOfficeHourId === row.id}
-                          className="rounded-md border border-red-400/30 bg-red-400/10 px-3 py-1 text-xs font-semibold text-red-200 transition-all duration-200 hover:border-red-400/50 hover:bg-red-400/20 active:scale-[0.96] disabled:opacity-60"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {!officeHours.length ? (
-                    <tr>
-                      <td className="px-3 py-3 text-white/50" colSpan={5}>
-                        No sessions configured yet.
-                      </td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
-            </div>
-
-            <form onSubmit={handleOfficeHourSubmit} className="mt-4 grid gap-2">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <ThemedSelect
-                  value={assigneeId}
-                  onChange={(event) => setAssigneeId(event.target.value)}
-                  required
-                >
-                  {staffOptions.map((staff) => (
-                    <option key={staff.id} value={staff.id}>
-                      {formatName(staff.name, staff.email)} ({staff.role})
-                    </option>
-                  ))}
-                </ThemedSelect>
-                <input
-                  value={location}
-                  onChange={(event) => setLocation(event.target.value)}
-                  placeholder="Location"
-                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
-                />
-              </div>
-              <div className="grid gap-2 sm:grid-cols-3">
-                <input
-                  type="date"
-                  value={officeHourDate}
-                  onChange={(event) => setOfficeHourDate(event.target.value)}
-                  required
-                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
-                />
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(event) => setStartTime(event.target.value)}
-                  required
-                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
-                />
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(event) => setEndTime(event.target.value)}
-                  required
-                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
-                />
-              </div>
-              <input
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Optional title"
-                className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
-              />
-              <button
-                type="submit"
-                disabled={isSubmittingOfficeHour || !staffOptions.length}
-                className="w-fit rounded-md border border-[#4ea0ff]/40 bg-[#4ea0ff]/20 px-4 py-2 text-sm font-semibold text-[#dceaff] transition-all duration-200 hover:border-[#4ea0ff]/60 hover:bg-[#4ea0ff]/30 hover:shadow-[0_4px_14px_rgba(78,160,255,0.2)] active:scale-[0.97] disabled:opacity-60"
-              >
-                +
-              </button>
-            </form>
-            {officeHourError ? (
-              <p className="mt-2 text-sm text-red-300">{officeHourError}</p>
-            ) : null}
-            {officeHourStatus ? (
-              <p className="mt-2 text-sm text-emerald-300">{officeHourStatus}</p>
-            ) : null}
-            {deleteOfficeHourError ? (
-              <p className="mt-2 text-sm text-red-300">{deleteOfficeHourError}</p>
             ) : null}
           </article>
         </section>
