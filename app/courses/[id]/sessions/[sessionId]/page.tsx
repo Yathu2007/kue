@@ -74,7 +74,10 @@ export default async function OfficeHourQueuePlaceholderPage({ params }: PagePro
 
   const initialQueueRows = await getQueueRowsForSession(sessionId);
 
-  const range = `${session.startTime.toLocaleString()} – ${session.endTime.toLocaleString()}`;
+  const range = `${session.startTime.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })} – ${session.endTime.toLocaleTimeString(undefined, { timeStyle: "short" })}`;
 
   return (
     <main className="min-h-screen bg-[#04030D] px-6 py-10 text-[#ededed] sm:px-10">

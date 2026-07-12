@@ -49,6 +49,33 @@ function formatName(name: string | null, email: string) {
   return name?.trim() || email;
 }
 
+function ThemedSelect({
+  wrapperClassName = "",
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { wrapperClassName?: string }) {
+  return (
+    <div className={`relative ${wrapperClassName}`}>
+      <select
+        {...props}
+        className="w-full cursor-pointer appearance-none rounded-md border border-white/20 bg-black/20 px-3 py-2 pr-9 text-sm text-white transition-all duration-200 hover:border-[#4ea0ff]/45 focus:border-[#4ea0ff]/70 focus:shadow-[0_0_14px_rgba(78,160,255,0.18)] focus:outline-none [&>option]:bg-[#0c0b14] [&>option]:text-white"
+      >
+        {children}
+      </select>
+      <svg
+        aria-hidden
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#94BFFF]/70"
+      >
+        <path d="M6 8l4 4 4-4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
 const IMPORT_ROLES = ["STUDENT", "TA", "INSTRUCTOR"];
 
 function parseEnrollmentCsv(text: string) {
@@ -68,7 +95,10 @@ function formatRange(startIso: string, endIso: string) {
   const start = new Date(startIso);
   const end = new Date(endIso);
   if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "-";
-  return `${start.toLocaleString()} - ${end.toLocaleTimeString()}`;
+  return `${start.toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  })} - ${end.toLocaleTimeString(undefined, { timeStyle: "short" })}`;
 }
 
 export function InstructorCourseDetail({
@@ -478,14 +508,13 @@ export function InstructorCourseDetail({
                 required
                 className="min-w-[220px] flex-1 rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-white/40"
               />
-              <select
+              <ThemedSelect
                 value={enrollmentRole}
                 onChange={(event) => setEnrollmentRole(event.target.value as "STUDENT" | "TA")}
-                className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
               >
                 <option value="STUDENT">Student</option>
                 <option value="TA">TA</option>
-              </select>
+              </ThemedSelect>
               <button
                 type="submit"
                 disabled={isSubmittingEnroll}
@@ -576,18 +605,17 @@ export function InstructorCourseDetail({
 
             <form onSubmit={handleOfficeHourSubmit} className="mt-4 grid gap-2">
               <div className="grid gap-2 sm:grid-cols-2">
-                <select
+                <ThemedSelect
                   value={assigneeId}
                   onChange={(event) => setAssigneeId(event.target.value)}
                   required
-                  className="rounded-md border border-white/20 bg-black/20 px-3 py-2 text-sm text-white"
                 >
                   {staffOptions.map((staff) => (
                     <option key={staff.id} value={staff.id}>
                       {formatName(staff.name, staff.email)} ({staff.role})
                     </option>
                   ))}
-                </select>
+                </ThemedSelect>
                 <input
                   value={location}
                   onChange={(event) => setLocation(event.target.value)}
